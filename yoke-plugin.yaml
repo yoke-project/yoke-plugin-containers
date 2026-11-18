@@ -1,0 +1,9 @@
+plugin: 1
+id: com.yoke.containers
+language: rust
+program: containers
+manifest: plugin/com.yoke.containers.yaml
+build:
+  in: plugin/
+  run: cargo build --release --target "$YOKE_RUST_TARGET" && cp "target/$YOKE_RUST_TARGET/release/containers" "$YOKE_OUT/containers"
+architectures: [x86_64, aarch64]

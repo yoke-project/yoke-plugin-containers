@@ -1,0 +1,8 @@
+plugins:
+  - id: com.yoke.containers
+    unit: containers
+    source: ..
+    tag: null
+    arch: x86_64
+    digest: sha256:2676e3df73093f2e2ea2f4ec61de3685943e1d3a090f7a409a23bb9cc8cf14f4
+    taken: 2026-11-18T02:36:54Z

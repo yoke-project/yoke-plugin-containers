@@ -1,0 +1,170 @@
+import { Button, LineEdit, ListView, Palette, TabWidget } from "std-widgets.slint";
+
+export struct ContainerRow {
+    id:        string,
+    name:      string,
+    image:     string,
+    state:     string,
+    status:    string,
+    ports:     string,
+    running:   bool,
+    // Commands refuse it: Yoke runs it, or the application protects it or does not allow it.
+    protected: bool,
+}
+
+export struct ImageRow {
+    id:        string,
+    tags:      string,
+    size:      string,
+    used:      string,
+    in_use:    bool,
+    protected: bool,
+}
+
+component Info inherits Text {
+    color: Palette.foreground.transparentize(0.45);
+    font-size: 12px;
+    vertical-alignment: center;
+}
+
+component Dot inherits Rectangle {
+    in property <string> state;
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background: root.state == "running" ? #3a3
+        : root.state == "paused" || root.state == "restarting" ? #e8a020
+        : root.state == "dead" ? #d33
+        : Palette.border;
+}
+
+export component MainWindow inherits Window {
+    title: "Containers";
+    preferred-width: 900px;
+    preferred-height: 620px;
+
+    in property <string> attached_to;
+    in-out property <string> message: "Starting...";
+
+    in property <bool> reachable;
+    in property <string> engine;
+    in property <string> counts;
+
+    in property <[ContainerRow]> containers;
+    in property <[ImageRow]> images;
+    in property <[string]> events;
+
+    callback act(string, string);
+    callback remove_image(string);
+    callback pull(string);
+    callback clear_events();
+
+    VerticalLayout {
+        padding: 10px;
+        spacing: 10px;
+
+        HorizontalLayout {
+            spacing: 10px;
+            Text { text: root.message; font-weight: 700; vertical-alignment: center; wrap: word-wrap; horizontal-stretch: 1; }
+            Info { text: root.attached_to; }
+        }
+
+        // The engine: as tall as what it holds.
+        Rectangle {
+            vertical-stretch: 0;
+            border-radius: 6px;
+            background: Palette.alternate-background;
+            HorizontalLayout {
+                padding: 14px;
+                spacing: 12px;
+                Text {
+                    text: root.reachable ? root.engine : "No container engine";
+                    font-size: 16px;
+                    font-weight: 700;
+                    vertical-alignment: center;
+                }
+                Rectangle { horizontal-stretch: 1; }
+                Info { text: root.counts; }
+            }
+        }
+
+        TabWidget {
+            vertical-stretch: 1;
+            Tab {
+                title: "Containers";
+                ListView {
+                    for c in root.containers : Rectangle {
+                        height: 48px;
+                        HorizontalLayout {
+                            padding-left: 8px; padding-right: 8px; spacing: 10px;
+                            Dot { state: c.state; y: (parent.height - self.height) / 2; }
+                            VerticalLayout {
+                                horizontal-stretch: 1;
+                                alignment: center;
+                                Text { text: c.name + (c.protected ? "  (protected)" : ""); overflow: elide; }
+                                Info { text: c.image + (c.ports != "" ? "  ·  " + c.ports : ""); overflow: elide; }
+                            }
+                            Info { text: c.status; width: 200px; overflow: elide; }
+                            if !c.protected && !c.running : Button { text: "Start"; clicked => { root.act("containers.start", c.id); } }
+                            if !c.protected && c.running : Button { text: "Stop"; clicked => { root.act("containers.stop", c.id); } }
+                            if !c.protected && c.running : Button { text: "Restart"; clicked => { root.act("containers.restart", c.id); } }
+                            // A running container is stopped before it is removed.
+                            if !c.protected && !c.running : Button { text: "Remove"; clicked => { root.act("containers.remove", c.id); } }
+                        }
+                    }
+                }
+            }
+            Tab {
+                title: "Images";
+                VerticalLayout {
+                    spacing: 8px;
+                    padding-top: 8px;
+                    HorizontalLayout {
+                        spacing: 8px;
+                        reference := LineEdit { placeholder-text: "docker.io/library/alpine:latest"; horizontal-stretch: 1; }
+                        Button { text: "Pull"; clicked => { root.pull(reference.text); } }
+                    }
+                    ListView {
+                        vertical-stretch: 1;
+                        for i in root.images : Rectangle {
+                            height: 40px;
+                            HorizontalLayout {
+                                padding-left: 8px; padding-right: 8px; spacing: 10px;
+                                VerticalLayout {
+                                    horizontal-stretch: 1;
+                                    alignment: center;
+                                    Text { text: i.tags + (i.protected ? "  (protected)" : ""); overflow: elide; }
+                                    Info { text: i.id; }
+                                }
+                                Info { text: i.used; width: 110px; }
+                                Info { text: i.size; width: 80px; horizontal-alignment: right; }
+                                // An image a container was made from is kept.
+                                if !i.protected && !i.in_use : Button { text: "Remove"; clicked => { root.remove_image(i.id); } }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Text { text: "Events"; font-weight: 600; }
+        HorizontalLayout {
+            spacing: 8px;
+            ListView {
+                height: 120px;
+                horizontal-stretch: 1;
+                for line in root.events : Text {
+                    text: line;
+                    font-family: "monospace";
+                    font-size: 12px;
+                    height: 18px;
+                    overflow: elide;
+                }
+            }
+            VerticalLayout {
+                alignment: start;
+                Button { text: "Clear"; clicked => { root.clear_events(); } }
+            }
+        }
+    }
+}

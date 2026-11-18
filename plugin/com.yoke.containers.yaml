@@ -1,0 +1,102 @@
+manifest: 1
+id: com.yoke.containers
+protocol: 1
+streams:
+  - id: containers.status
+  - id: containers.list
+    tolerates_loss: true
+  - id: containers.images
+    tolerates_loss: true
+commands:
+  - id: containers.start
+  - id: containers.stop
+  - id: containers.restart
+  - id: containers.pause
+  - id: containers.unpause
+  - id: containers.kill
+  - id: containers.remove
+  - id: containers.image.pull
+  - id: containers.image.remove
+queries:
+  - id: containers.status
+  - id: containers.list
+  - id: containers.images
+  - id: containers.inspect
+  - id: containers.logs
+  - id: containers.permissions
+occurrences:
+  - id: containers.container.started
+  - id: containers.container.exited
+  - id: containers.container.unhealthy
+  - id: containers.container.oom
+  - id: containers.job.finished
+capabilities:
+  - name: query.containers.status.answer
+    governs:
+      query: containers.status
+  - name: query.containers.list.answer
+    governs:
+      query: containers.list
+  - name: query.containers.images.answer
+    governs:
+      query: containers.images
+  - name: query.containers.inspect.answer
+    governs:
+      query: containers.inspect
+  - name: query.containers.logs.answer
+    governs:
+      query: containers.logs
+  - name: query.containers.permissions.answer
+    governs:
+      query: containers.permissions
+  - name: command.containers.start.accept
+    governs:
+      command: containers.start
+  - name: command.containers.stop.accept
+    governs:
+      command: containers.stop
+  - name: command.containers.restart.accept
+    governs:
+      command: containers.restart
+  - name: command.containers.pause.accept
+    governs:
+      command: containers.pause
+  - name: command.containers.unpause.accept
+    governs:
+      command: containers.unpause
+  - name: command.containers.kill.accept
+    governs:
+      command: containers.kill
+  - name: command.containers.remove.accept
+    governs:
+      command: containers.remove
+  - name: command.containers.image.pull.accept
+    governs:
+      command: containers.image.pull
+  - name: command.containers.image.remove.accept
+    governs:
+      command: containers.image.remove
+  - name: stream.containers.status.publish
+    governs:
+      stream: containers.status
+  - name: stream.containers.list.publish
+    governs:
+      stream: containers.list
+  - name: stream.containers.images.publish
+    governs:
+      stream: containers.images
+  - name: event.containers.container.started.report
+    governs:
+      occurrence: containers.container.started
+  - name: event.containers.container.exited.report
+    governs:
+      occurrence: containers.container.exited
+  - name: event.containers.container.unhealthy.report
+    governs:
+      occurrence: containers.container.unhealthy
+  - name: event.containers.container.oom.report
+    governs:
+      occurrence: containers.container.oom
+  - name: event.containers.job.finished.report
+    governs:
+      occurrence: containers.job.finished

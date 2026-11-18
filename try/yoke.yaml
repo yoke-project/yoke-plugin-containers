@@ -1,0 +1,15 @@
+model: 1
+id: com.yoke.containers-try
+version: 0.1.0
+arch: x86_64
+core: ">=0.15.0"
+units:
+  containers:
+    kind: plugin
+    plugin: com.yoke.containers
+    exec: components/plugins/containers
+    digest: sha256:2676e3df73093f2e2ea2f4ec61de3685943e1d3a090f7a409a23bb9cc8cf14f4
+channels:
+  panel:
+    transport: local
+    clients: single
